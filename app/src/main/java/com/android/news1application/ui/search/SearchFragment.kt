@@ -46,9 +46,9 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
 
         itemHeadlineError = binding.cvSearchErrorView.root
 
-        val inflater =
-            requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
-        val searchView: View = inflater.inflate(R.layout.error_view, null)
+//        val inflater =
+//            requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+//        val searchView: View = inflater.inflate(R.layout.error_view, null)
 
         retryButton = binding.cvSearchErrorView.root.findViewById(R.id.retryButton)
         errorText = binding.cvSearchErrorView.root.findViewById(R.id.errorBody)
@@ -56,12 +56,9 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         setupSearchRecyclerView()
 
         newsAdapter.setOnItemClickListener {
-            val bundle = Bundle().apply {
-                putSerializable("article", it)
-            }
 
             findNavController().navigate(
-                R.id.action_searchFragment_to_articleFragment, bundle
+                SearchFragmentDirections.actionSearchFragmentToArticleFragment(it)
             )
         }
 
@@ -70,7 +67,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
         binding.searchEdit.addTextChangedListener() { editable ->
             job?.cancel()
             job = MainScope().launch {
-                delay( SEARCH_DELAY)
+                delay(SEARCH_DELAY)
                 editable?.let {
                     if (editable.toString().isNotEmpty()) {
                         newsViewModel.searchNews(editable.toString())
@@ -79,7 +76,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
             }
         }
 
-        newsViewModel.searchNews.observe(viewLifecycleOwner, Observer {response ->
+        newsViewModel.searchNews.observe(viewLifecycleOwner, Observer { response ->
             when (resources) {
                 is Resource.Success<*> -> {
                     hideProgressBar()
@@ -97,7 +94,7 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                 is Resource.Error<*> -> {
                     hideProgressBar()
                     response.message?.let { message ->
-                        Toast.makeText(activity, "An error occured: $message", Toast.LENGTH_LONG)
+                        Toast.makeText(activity, "An error occured: $message", Toast.LENGTH_LONG).show()
                         showErrorMessage(message)
                     }
                 }
@@ -106,12 +103,28 @@ class SearchFragment : Fragment(R.layout.fragment_search) {
                     showProgressBar()
                 }
             }
+
+            try {
+                hideProgressBar()
+                hideErrorMessage()
+                response.data?.let { newsResponse ->
+                    newsAdapter.differ.submitList(newsResponse.articles.toList())
+                    val totalPages = newsResponse.totalResults / Constants.QUERY_PAGE_SIZE + 2
+                    isLastPage = newsViewModel.headlinesPage == totalPages
+                    if (isLastPage) {
+                        binding.rvSearchResults.setPadding(0, 0, 0, 0)
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+
         })
 
         retryButton.setOnClickListener {
-            if (binding.searchEdit.text.toString().isNotEmpty()){
+            if (binding.searchEdit.text.toString().isNotEmpty()) {
                 newsViewModel.searchNews(binding.searchEdit.text.toString())
-            }else{
+            } else {
                 hideErrorMessage()
             }
         }

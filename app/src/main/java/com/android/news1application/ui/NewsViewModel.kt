@@ -29,10 +29,6 @@ class NewsViewModel(application: Application, private val newsRepository: NewsRe
     var newSearchQuery: String? = null
     var oldSearchQuery: String? = null
 
-//    val favoriteNews:MutableLiveData<Resource<NewsResponse>> = MutableLiveData()
-//    val favoriteNewsPage = 1
-//    val favoriteNewsResponse: NewsResponse? = null
-
     init {
         getHeadlines("us")
     }
@@ -127,6 +123,8 @@ class NewsViewModel(application: Application, private val newsRepository: NewsRe
     private suspend fun searchNewsInternet(searchQuery: String) {
         newSearchQuery = searchQuery
         searchNews.postValue(Resource.Loading())
+
+        Log.d("TAG", "searchNewsInternet: Searching...")
 
         try {
             if (internetConnection(this.getApplication())) {

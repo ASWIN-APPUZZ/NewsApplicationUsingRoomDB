@@ -60,24 +60,18 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
                 val position = viewHolder.adapterPosition
                 val article = newsAdapter.differ.currentList[position]
                 newsViewModel.deleteArticle(article)
-//                Snackbar.make(requireView(), "", Snackbar.LENGTH_LONG).apply {
-//                    setAction("Undo") {
-//                        newsViewModel.addToFavorite(article)
-//                    }
-//                    show()
-//                }
                 showSnackbarAboveButtons(view, article)
             }
         }
         ItemTouchHelper(itemTouchHelperCallBack).apply {
             attachToRecyclerView(binding.rvFavorites)
         }
-        newsViewModel.getFavoriteNews().observe(viewLifecycleOwner, Observer { articles ->
+        newsViewModel.getFavoriteNews().observe(viewLifecycleOwner) { articles ->
             newsAdapter.differ.submitList(articles)
-        })
+        }
     }
 
-    @SuppressLint("InternalInsetResource")
+    @SuppressLint("InternalInsetResource", "DiscouragedApi")
     fun showSnackbarAboveButtons(view: View, article: Article) {
         val snackbar = Snackbar.make(view, "Removed From Favorites", Snackbar.LENGTH_LONG).apply {
             setAction("Undo") {
@@ -88,7 +82,6 @@ class FavoritesFragment : Fragment(R.layout.fragment_favorites) {
         val snackbarView = snackbar.view
         val params = snackbarView.layoutParams as FrameLayout.LayoutParams
         params.gravity = Gravity.BOTTOM
-//        params.anchorGravity = Gravity.TOP
         val resources = view.resources
         val resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android")
         if (resourceId > 0) {
