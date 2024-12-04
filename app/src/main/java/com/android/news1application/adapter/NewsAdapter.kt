@@ -62,17 +62,11 @@ class NewsAdapter : RecyclerView.Adapter<NewsAdapter.ArticleViewHolder>() {
             setOnClickListener {
                 onItemClickListener?.let { it(article) }
             }
-
         }
 
         if(position == differ.currentList.size-1){
             holder.itemView.findViewById<View>(R.id.viewDivider).visibility = View.GONE
         }
-
-//        if (position%2 !=0){
-//            holder.itemView.setBackgroundResource(R.color.grey)
-//        }
-
     }
 
     fun setOnItemClickListener(listener: (Article) -> Unit) {
